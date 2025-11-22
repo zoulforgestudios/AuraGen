@@ -155,24 +155,23 @@ export async function searchMinecraft(query: string): Promise<SearchResult[]> {
   }
 }
 
-// Mock Google Search (requires API key in real implementation)
+const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY!;
+
 export async function searchGoogle(query: string): Promise<SearchResult[]> {
-  // In production, use Google Custom Search API
-  // For now, return mock data to demonstrate the UI
-  return [
-    {
-      title: `Search results for "${query}"`,
-      summary: `To enable real Google Search results, add your Google Custom Search API key and Search Engine ID. This will provide web search results, images, and snippets.`,
-      keyPoints: [
-        'Real-time web results',
-        'Image and video results',
-        'Featured snippets',
-      ],
-      url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-      sourceType: 'google',
-    },
-  ];
+  const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&q=${encodeURIComponent(query)}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  return data.items?.map((item: any) => ({
+    title: item.title,
+    summary: item.snippet,
+    keyPoints: [],
+    url: item.link,
+    sourceType: "google",
+  })) || [];
 }
+
 
 // Mock Spotify Search (requires API key)
 export async function searchSpotify(query: string): Promise<SearchResult[]> {
