@@ -155,8 +155,8 @@ export async function searchMinecraft(query: string): Promise<SearchResult[]> {
   }
 }
 
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY!;
-const GOOGLE_CX = process.env.NEXT_PUBLIC_GOOGLE_CX!;
+const GOOGLE_API_KEY = AIzaSyASMf5ZXaWRQdFeGyT7uThfx4qINXYO6YI;
+const GOOGLE_CX = 77b4de003cd644a31;
 
 
 export async function searchGoogle(query: string): Promise<SearchResult[]> {
@@ -303,6 +303,7 @@ export async function searchTranslation(query: string): Promise<SearchResult[]> 
     'in french',
     'in hindi',
     'in chinese',
+    'in japanese',
   ];
 
   const isTranslationQuery = translationKeywords.some((keyword) =>
