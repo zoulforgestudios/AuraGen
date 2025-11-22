@@ -156,21 +156,25 @@ export async function searchMinecraft(query: string): Promise<SearchResult[]> {
 }
 
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY!;
+const GOOGLE_CX = process.env.NEXT_PUBLIC_GOOGLE_CX!;
+
 
 export async function searchGoogle(query: string): Promise<SearchResult[]> {
-  const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&q=${encodeURIComponent(query)}`;
+  const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}`;
 
   const response = await fetch(url);
   const data = await response.json();
 
+  // Convert Google API response → your UI format
   return data.items?.map((item: any) => ({
     title: item.title,
     summary: item.snippet,
-    keyPoints: [],
+    keyPoints: [], // Google doesn’t provide bullet points (you can generate using GPT if you want)
     url: item.link,
     sourceType: "google",
   })) || [];
 }
+
 
 
 // Mock Spotify Search (requires API key)
