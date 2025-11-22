@@ -155,219 +155,32 @@ export async function searchMinecraft(query: string): Promise<SearchResult[]> {
   }
 }
 
-const GOOGLE_API_KEY = AIzaSyASMf5ZXaWRQdFeGyT7uThfx4qINXYO6YI;
-const GOOGLE_CX = 77b4de003cd644a31;
-
-
-export async function searchGoogle(query: string): Promise<SearchResult[]> {
-  const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}`;
-
-  const response = await fetch(url);
-  const data = await response.json();
-
-  // Convert Google API response → your UI format
-  return data.items?.map((item: any) => ({
-    title: item.title,
-    summary: item.snippet,
-    keyPoints: [], // Google doesn’t provide bullet points (you can generate using GPT if you want)
-    url: item.link,
-    sourceType: "google",
-  })) || [];
-}
-
-
-
-// Mock Spotify Search (requires API key)
-export async function searchSpotify(query: string): Promise<SearchResult[]> {
-  // In production, use Spotify Web API
-  return [
-    {
-      title: `Music search: "${query}"`,
-      summary: `To enable Spotify integration, add your Spotify API credentials. This will provide artist info, albums, tracks, and playlists.`,
-      keyPoints: [
-        'Artist discographies',
-        'Album information',
-        'Track details and previews',
-      ],
-      url: `https://open.spotify.com/search/${encodeURIComponent(query)}`,
-      sourceType: 'spotify',
-    },
-  ];
-}
-
-// Mock Anime/Crunchyroll Search
-export async function searchAnime(query: string): Promise<SearchResult[]> {
-  // In production, use Jikan API (MyAnimeList) or AniList API
-  return [
-    {
-      title: `Anime search: "${query}"`,
-      summary: `To enable anime database integration, implement Jikan API or AniList GraphQL API. This will provide anime info, episodes, ratings, and reviews.`,
-      keyPoints: [
-        'Anime series information',
-        'Episode guides',
-        'Ratings and reviews',
-      ],
-      url: `https://myanimelist.net/search/all?q=${encodeURIComponent(query)}`,
-      sourceType: 'anime',
-    },
-  ];
-}
-
-// Mock News Search (BBC, Times of India, Economic Times)
-export async function searchNews(query: string): Promise<SearchResult[]> {
-  // In production, use News API or RSS feeds
-  return [
-    {
-      title: `Latest news on "${query}"`,
-      summary: `To enable news aggregation, integrate News API or RSS feeds from BBC, Times of India, and Economic Times. This will provide real-time news articles.`,
-      keyPoints: [
-        'Breaking news updates',
-        'Multiple source coverage',
-        'Regional and global news',
-      ],
-      url: `https://news.google.com/search?q=${encodeURIComponent(query)}`,
-      sourceType: 'news',
-    },
-  ];
-}
-
-// Mock Sports/Cricket Search (ESPN Cricinfo)
-export async function searchSports(query: string): Promise<SearchResult[]> {
-  // In production, use ESPN API or Cricinfo feeds
-  return [
-    {
-      title: `Sports coverage: "${query}"`,
-      summary: `To enable sports integration, implement ESPN Cricinfo API. This will provide live scores, match schedules, player stats, and cricket news.`,
-      keyPoints: [
-        'Live match scores',
-        'Player statistics',
-        'Tournament schedules',
-      ],
-      url: `https://www.espncricinfo.com/search?q=${encodeURIComponent(query)}`,
-      sourceType: 'sports',
-    },
-  ];
-}
-
-// Mock Programming Language Wikis
-export async function searchProgramming(query: string): Promise<SearchResult[]> {
-  // Check if query contains programming keywords
-  const progKeywords = [
-    'javascript',
-    'python',
-    'java',
-    'react',
-    'node',
-    'typescript',
-    'css',
-    'html',
-    'sql',
-    'api',
-    'function',
-    'class',
-    'variable',
-  ];
-  
-  const isProgrammingQuery = progKeywords.some((keyword) =>
-    query.toLowerCase().includes(keyword)
-  );
-
-  if (!isProgrammingQuery) return [];
-
-  return [
-    {
-      title: `Programming documentation: "${query}"`,
-      summary: `To enable programming wiki integration, implement MDN Web Docs API, DevDocs, or language-specific documentation APIs. This will provide code examples and API references.`,
-      keyPoints: [
-        'Code examples and syntax',
-        'API documentation',
-        'Best practices and guides',
-      ],
-      url: `https://developer.mozilla.org/en-US/search?q=${encodeURIComponent(
-        query
-      )}`,
-      sourceType: 'programming',
-    },
-  ];
-}
-
-// Mock Translation
-export async function searchTranslation(query: string): Promise<SearchResult[]> {
-  // Check if query is a translation request
-  const translationKeywords = [
-    'translate',
-    'translation',
-    'how do you say',
-    'what is',
-    'in spanish',
-    'in french',
-    'in hindi',
-    'in chinese',
-    'in japanese',
-  ];
-
-  const isTranslationQuery = translationKeywords.some((keyword) =>
-    query.toLowerCase().includes(keyword)
-  );
-
-  if (!isTranslationQuery) return [];
-
-  return [
-    {
-      title: `Translation service`,
-      summary: `To enable translation, integrate Google Translate API or LibreTranslate. This will provide translations across 100+ languages.`,
-      keyPoints: [
-        'Multi-language support',
-        'Text and phrase translation',
-        'Pronunciation guides',
-      ],
-      url: `https://translate.google.com/?text=${encodeURIComponent(query)}`,
-      sourceType: 'translation',
-    },
-  ];
-}
 
 // Master search function
 export async function searchAllSources(
   query: string
 ): Promise<SourceResults[]> {
   const [
-    googleResults,
-    spotifyResults,
     pokemonResults,
     animeResults,
     minecraftResults,
     redditResults,
-    newsResults,
-    sportsResults,
-    programmingResults,
-    translationResults,
     wikipediaResults,
   ] = await Promise.all([
-    searchGoogle(query),
-    searchSpotify(query),
+
     searchPokemon(query),
-    searchAnime(query),
+
     searchMinecraft(query),
     searchReddit(query),
-    searchNews(query),
-    searchSports(query),
-    searchProgramming(query),
-    searchTranslation(query),
+
     searchWikipedia(query),
   ]);
 
   const allResults: SourceResults[] = [
-    { category: 'Google Results', results: googleResults },
-    { category: 'Spotify / Music Database', results: spotifyResults },
     { category: 'Pokémon Database', results: pokemonResults },
     { category: 'Anime / Crunchyroll Wiki', results: animeResults },
     { category: 'Minecraft Wiki', results: minecraftResults },
     { category: 'Reddit Discussions', results: redditResults },
-    { category: 'News (BBC / Times of India / Economic Times)', results: newsResults },
-    { category: 'Sports & Cricket (ESPN Cricinfo)', results: sportsResults },
-    { category: 'Programming Language Wikis', results: programmingResults },
-    { category: 'Translations', results: translationResults },
     { category: 'Wikipedia Summary', results: wikipediaResults },
   ];
 
