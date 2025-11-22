@@ -155,35 +155,89 @@ export async function searchMinecraft(query: string): Promise<SearchResult[]> {
   }
 }
 
+export async function searchDuckDuckGo(query: string): Promise<SearchResult[]> {
+  try {
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(
+      query
+    )}&format=json&no_redirect=1&no_html=1`;
 
-// Master search function
-export async function searchAllSources(
-  query: string
-): Promise<SourceResults[]> {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.Heading && !data.Abstract) return [];
+
+    return [
+      {
+        title: data.Heading || query,
+        summary: data.Abstract || "No summary available.",
+        keyPoints: data.RelatedTopics?.slice(0, 3).map((t: any) => t.Text) || [],
+        thumbnail: data.Image || undefined,
+        url: data.AbstractURL || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+        sourceType: "duckduckgo",
+      },
+    ];
+  } catch {
+    return [];
+  }
+}
+
+
+export async function searchYouTube(query: string): Promise<SearchResult[]> {
+  try {
+    const url = `https://invidious.snopyta.org/api/v1/search?q=${encodeURIComponent(
+      query
+    )}&type=video`;
+
+    const res = await fetch(url);
+    if (!res.ok) return [];
+
+    const data = await res.json();
+
+    return data.slice(0, 3).map((video: any) => ({
+      title: video.title,
+      summary: video.description || "YouTube video",
+      thumbnail: video.videoThumbnails?.[0]?.url,
+      keyPoints: [
+        `By: ${video.author}`,
+        `Views: ${video.viewCount}`,
+        `Duration: ${video.lengthSeconds}s`,
+      ],
+      url: `https://youtube.com/watch?v=${video.videoId}`,
+      sourceType: "youtube",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+
+
+export async function searchAllSources(query: string): Promise<SourceResults[]> {
   const [
     pokemonResults,
-    animeResults,
     minecraftResults,
     redditResults,
     wikipediaResults,
+    duckduckgoResults,
+    youtubeResults,
   ] = await Promise.all([
-
     searchPokemon(query),
-
     searchMinecraft(query),
     searchReddit(query),
-
     searchWikipedia(query),
+    searchDuckDuckGo(query),
+    searchYouTube(query),
   ]);
 
   const allResults: SourceResults[] = [
-    { category: 'Pokémon Database', results: pokemonResults },
-    { category: 'Anime / Crunchyroll Wiki', results: animeResults },
-    { category: 'Minecraft Wiki', results: minecraftResults },
-    { category: 'Reddit Discussions', results: redditResults },
-    { category: 'Wikipedia Summary', results: wikipediaResults },
+    { category: "Pokémon Database", results: pokemonResults },
+    { category: "Minecraft Wiki", results: minecraftResults },
+    { category: "Reddit Discussions", results: redditResults },
+    { category: "Wikipedia Summary", results: wikipediaResults },
+    { category: "DuckDuckGo Results", results: duckduckgoResults },
+    { category: "YouTube Videos", results: youtubeResults },
   ];
 
-  // Filter out empty results
   return allResults.filter((source) => source.results.length > 0);
 }
+
